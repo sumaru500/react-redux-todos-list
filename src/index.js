@@ -1,14 +1,25 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from '~/App';
-import reportWebVitals from './reportWebVitals';
-import GlobalStyles from './components/GlobalStyles';
+import { createStore } from 'redux';
+import { Provider } from 'react-redux';
 
+import reportWebVitals from './reportWebVitals';
+
+import rootReducer from '~/reducers';
+import GlobalStyles from './components/GlobalStyles';
+import App from '~/containers/App';
+import reduxLogger from './libs/reduxLogger';
+
+import '~/libs/utils';
+
+const store = createStore(reduxLogger(rootReducer));
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <React.StrictMode>
         <GlobalStyles>
-            <App />
+            <Provider store={store}>
+                <App />
+            </Provider>
         </GlobalStyles>
     </React.StrictMode>,
 );
