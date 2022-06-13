@@ -1,7 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { createStore } from 'redux';
+import { createStore, compose, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
+import thunk from 'redux-thunk';
 
 import reportWebVitals from './reportWebVitals';
 
@@ -10,9 +11,12 @@ import GlobalStyles from './components/GlobalStyles';
 import App from '~/containers/App';
 import reduxLogger from './libs/reduxLogger';
 
+
 import '~/libs/utils';
 
-const store = createStore(reduxLogger(rootReducer));
+const store = createStore(reduxLogger(rootReducer),
+    compose(applyMiddleware(thunk), window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__())
+);
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <React.StrictMode>

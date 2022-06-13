@@ -1,3 +1,4 @@
+export const FETCH = 'fetch';
 export const ADD = 'add';
 export const REMOVE = 'remove';
 export const EDIT_END = 'editEnd';

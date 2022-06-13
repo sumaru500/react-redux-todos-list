@@ -1,9 +1,11 @@
 import { connect } from 'react-redux';
+import { useState } from 'react';
 import { todoActions } from '~/actions';
 import { todoFilterNames } from '~/constants';
 
-const Footer = ({ todos, filter, filters, filterTodo, clearCompletedTodo }) => {
-    
+const Footer = ({ todos, filter, filters, filterTodo, clearCompletedTodoRequest }) => {
+    const [isOnCallingApiClearCompleted, setOnCallingApiClearCompleted] = useState(false);
+
     const handleFilterTodo = (event) => {
         // dispatch to redux store
         filterTodo(event.target.dataset.filter);
@@ -11,11 +13,12 @@ const Footer = ({ todos, filter, filters, filterTodo, clearCompletedTodo }) => {
 
     const handleClearCompletedTodo = (event) => {
         // dispatch to redux store
-        clearCompletedTodo();
+        clearCompletedTodoRequest(setOnCallingApiClearCompleted, todos.filter(filters[todoFilterNames.COMPLETED]).map(todo => todo.id));
     }
     
     return (
         <footer className="footer">
+            {isOnCallingApiClearCompleted && <div>Deleting completed todo...</div>}
             {/* <!-- This should be `0 items left` by default --> */}
             <span className="todo-count">
                 <strong>{todos.filter(filters[todoFilterNames.ACTIVE]).length}</strong> item left
@@ -52,6 +55,6 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
     filterTodo: (filter) => dispatch(todoActions.filterTodo(filter)),
-    clearCompletedTodo: () => dispatch(todoActions.clearCompletedTodo()),
+    clearCompletedTodoRequest: (setOnCallingApiClearCompleted, ids) => dispatch(todoActions.clearCompletedTodoRequest(setOnCallingApiClearCompleted, ids)),
 });
 export default connect(mapStateToProps, mapDispatchToProps)(Footer);

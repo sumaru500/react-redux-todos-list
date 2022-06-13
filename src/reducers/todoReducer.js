@@ -8,7 +8,7 @@ const storageKeys = {
 };
 const storage = createStorage(storageKeys.root);
 const initialState = {
-    todos: storage.get(storageKeys.keys.todos) ?? [],
+    todos: [],
     filter: todoFilterNames.ALL,
 
     // filter definition on todos
@@ -20,22 +20,29 @@ const initialState = {
 };
 
 const actions = {
-    [todoActionNames.ADD]: (state, { title }) => {
+    [todoActionNames.FETCH]: (state, { todos }) => {
+        state = {
+            ...state,
+            todos,
+        };
+        // save to storage
+        storage.set(storageKeys.keys.todos, state.todos);
+        return state;
+    },
+    [todoActionNames.ADD]: (state, todo) => {
         state = {
             ...state,
             todos: [
                 ...state.todos,
-                {
-                    title,
-                    completed: false,
-                },
+                todo,
             ],
         };
         // save to storage
         storage.set(storageKeys.keys.todos, state.todos);
         return state;
     },
-    [todoActionNames.REMOVE]: (state, { index }) => {
+    [todoActionNames.REMOVE]: (state, { id }) => {
+        const index = window.utils._.findIndex(state.todos, (todo, index) => todo.id === id);
         state.todos.splice(index, 1);
         state = {
             ...state,
@@ -45,22 +52,24 @@ const actions = {
         storage.set(storageKeys.keys.todos, state.todos);
         return state;
     },
-    [todoActionNames.EDIT_END]: (state, { editIndex, newTitle }) => {
+    [todoActionNames.EDIT_END]: (state, { editId, newTitle }) => {
+        const index = window.utils._.findIndex(state.todos, (todo, index) => todo.id === editId);
         if (newTitle) {
-            state.todos[editIndex].title = newTitle;
+            state.todos[index].title = newTitle;
             state = {
                 ...state,
                 todos: [...state.todos],
             };
         } else {
-            state = actions[todoActionNames.REMOVE](state, editIndex);
+            state = actions[todoActionNames.REMOVE](state, editId);
         }
         // save to storage
         storage.set(storageKeys.keys.todos, state.todos);
         return state;
     },
-    [todoActionNames.TOGGLE]: (state, { index }) => {
-        state.todos[index].completed = !state.todos[index].completed;
+    [todoActionNames.TOGGLE]: (state, { id, checked }) => {
+        const index = state.todos.findIndex((todo, index) => todo.id === id)
+        state.todos[index].completed = checked;
         state = {
             ...state,
             todos: [...state.todos],
@@ -69,9 +78,9 @@ const actions = {
         storage.set(storageKeys.keys.todos, state.todos);
         return state;
     },
-    [todoActionNames.TOGGLE_ALL]: (state, { checked }) => {
+    [todoActionNames.TOGGLE_ALL]: (state, {ids, checked }) => {
         state.todos.forEach((todo) => {
-            todo.completed = checked;
+            ids.includes(todo.id) && (todo.completed = checked);
         });
 
         state = {
@@ -89,8 +98,8 @@ const actions = {
             filter: state.filter,
         };
     },
-    [todoActionNames.CLEAR_COMPLETED]: (state) => {
-        state.todos = state.todos.filter(state.filters[todoFilterNames.ACTIVE]);
+    [todoActionNames.CLEAR_COMPLETED]: (state, {ids}) => {
+        state.todos = state.todos.filter((todo) => !ids.includes(todo.id));
         state = {
             ...state,
             todos: [...state.todos],

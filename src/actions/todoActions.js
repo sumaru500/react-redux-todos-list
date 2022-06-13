@@ -1,41 +1,166 @@
 import { todoActionNames } from '~/constants';
-export const addTodo = (title) => {
+import { config } from '~/constants';
+import axiosServiceCreator from '~/common';
+
+const todoAxiosService = axiosServiceCreator.createService(config.BASE_API_URL, config.END_POINTS.todos);
+
+// FETCH Todos
+export const fetchTodoRequest = (setOnCallingApi) => {
+    return async (dispatch) => {
+        setOnCallingApi(true);
+        // fake delay
+        setTimeout(async () => {
+            const res = await todoAxiosService.get();
+            console.log(res);
+            dispatch(fetchTodo(res.data));
+            setOnCallingApi(false);
+        }, 200)
+    };
+};
+export const fetchTodo = (todos) => {
     return {
-        type: todoActionNames.ADD,
+        type: todoActionNames.FETCH,
         payload: {
-            title,
+            todos,
         },
     };
 };
-export const removeTodo = (index) => {
+
+export const addTodoRequest = (setOnCallingApi, title) => {
+    return async (dispatch) => {
+        setOnCallingApi(true);
+        // fake delay
+        setTimeout(async () => {
+            const res = await todoAxiosService.post({
+                body: {
+                    title,
+                    completed : false
+                }}
+            );
+            if (res.status === 201) { // OK
+                dispatch(addTodo(res.data));
+            }
+            setOnCallingApi(false);
+        }, 200)
+    };
+};
+export const addTodo = (todo) => {
+    return {
+        type: todoActionNames.ADD,
+        payload: todo,
+    };
+};
+
+export const removeTodoRequest = (setOnCallingApi, id) => {
+    return async (dispatch) => {
+        setOnCallingApi(true);
+        // fake delay
+        setTimeout(async () => {
+            const res = await todoAxiosService.delete({
+                paramPath: id}
+            );
+            if (res.status === 200) { // OK
+                dispatch(removeTodo(id));
+            }
+            setOnCallingApi(false);
+        }, 200)
+    };
+};
+export const removeTodo = (id) => {
     return {
         type: todoActionNames.REMOVE,
         payload: {
-            index,
+            id,
         },
     };
 };
-export const editEndTodo = (editIndex, newTitle) => {
+
+export const editEndTodoRequest = (setOnCallingApi, editId, newTitle) => {
+    return async (dispatch) => {
+        setOnCallingApi(true);
+        // fake delay
+        setTimeout(async () => {
+            const res = await todoAxiosService.patch({
+                paramPath: editId,
+                body: {
+                    title: newTitle
+                }
+            });
+            if (res.status === 200) { // OK
+                dispatch(editEndTodo(editId, newTitle));
+            }
+            setOnCallingApi(false);
+        }, 200)
+    };
+};
+export const editEndTodo = (editId, newTitle) => {
     return {
         type: todoActionNames.EDIT_END,
         payload: {
-            editIndex,
+            editId,
             newTitle,
         },
     };
 };
-export const toggleTodo = (index) => {
+
+export const toggleTodoRequest = (setOnCallingApi, id, checked) => {
+    return async (dispatch) => {
+        setOnCallingApi(true);
+        // fake delay
+        setTimeout(async () => {
+            const res = await todoAxiosService.patch({
+                paramPath: id,
+                body: {
+                    completed: checked 
+                }
+            });
+            if (res.status === 200) { // OK
+                dispatch(toggleTodo(id, checked));
+            }
+            setOnCallingApi(false);
+        }, 200)
+    };
+};
+export const toggleTodo = (id, checked) => {
     return {
         type: todoActionNames.TOGGLE,
         payload: {
-            index,
+            id,
+            checked
         },
     };
 };
-export const toggleAllTodo = (checked) => {
+
+export const toggleAllTodoRequest = (setOnCallingApi, ids, checked) => {
+    return async (dispatch) => {
+        setOnCallingApi(true);
+        // fake delay
+        setTimeout(async () => {
+            let successIds = [];
+            // all one by one patch request
+            for(const id of ids) {
+                const res = await todoAxiosService.patch({
+                    paramPath: id,
+                    body: {                
+                        completed: checked 
+                    }
+                });
+                (res.status === 200) && successIds.push(id);
+            }
+
+            if (successIds.length > 0) { // OK
+                dispatch(toggleAllTodo(successIds, checked));
+            }
+
+            setOnCallingApi(false);
+        }, 200)
+    };
+};
+export const toggleAllTodo = (ids, checked) => {
     return {
         type: todoActionNames.TOGGLE_ALL,
         payload: {
+            ids,
             checked,
         },
     };
@@ -48,8 +173,34 @@ export const filterTodo = (filter) => {
         },
     };
 };
-export const clearCompletedTodo = () => {
+
+export const clearCompletedTodoRequest = (setOnCallingApi, ids) => {
+    return async (dispatch) => {
+        setOnCallingApi(true);
+        // fake delay
+        setTimeout(async () => {
+            let successIds = [];
+            // all one by one patch request
+            for(const id of ids) {
+                const res = await todoAxiosService.delete({
+                    paramPath: id,
+                });
+                (res.status === 200) && successIds.push(id);
+            }
+
+            if (successIds.length > 0) { // OK
+                dispatch(clearCompletedTodo(successIds));
+            }
+
+            setOnCallingApi(false);
+        }, 200)
+    };
+};
+export const clearCompletedTodo = (ids) => {
     return {
         type: todoActionNames.CLEAR_COMPLETED,
+        payload: {
+            ids,
+        },
     };
 };
