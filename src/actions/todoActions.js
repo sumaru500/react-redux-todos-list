@@ -10,10 +10,10 @@ export const fetchTodoRequest = (setOnCallingApi) => {
         setOnCallingApi(true);
         // fake delay
         // setTimeout(async () => {
-            const res = await todoAxiosService.get();
-            console.log(res);
-            dispatch(fetchTodo(res.data));
-            setOnCallingApi(false);
+        const res = await todoAxiosService.get();
+        console.log(res);
+        dispatch(fetchTodo(res.data));
+        setOnCallingApi(false);
         // }, 200);
     };
 };
@@ -31,17 +31,17 @@ export const addTodoRequest = (setOnCallingApi, title) => {
         setOnCallingApi(true);
         // fake delay
         // setTimeout(async () => {
-            const res = await todoAxiosService.post({
-                body: {
-                    title,
-                    completed: false,
-                },
-            });
-            if (res.status === 201) {
-                // OK
-                dispatch(addTodo(res.data));
-            }
-            setOnCallingApi(false);
+        const res = await todoAxiosService.post({
+            body: {
+                title,
+                completed: false,
+            },
+        });
+        if (res.status === 201) {
+            // OK
+            dispatch(addTodo(res.data));
+        }
+        setOnCallingApi(false);
         // }, 200);
     };
 };
@@ -57,14 +57,14 @@ export const removeTodoRequest = (setOnCallingApi, id) => {
         setOnCallingApi(true);
         // fake delay
         // setTimeout(async () => {
-            const res = await todoAxiosService.delete({
-                paramPath: id,
-            });
-            if (res.status === 200) {
-                // OK
-                dispatch(removeTodo(id));
-            }
-            setOnCallingApi(false);
+        const res = await todoAxiosService.delete({
+            paramPath: id,
+        });
+        if (res.status === 200) {
+            // OK
+            dispatch(removeTodo(id));
+        }
+        setOnCallingApi(false);
         // }, 200);
     };
 };
@@ -82,30 +82,30 @@ export const editEndTodoRequest = (setOnCallingApi, editId, newTitle) => {
         setOnCallingApi(true);
         // fake delay
         // setTimeout(async () => {
-            let res;
-            if (newTitle) {
-                res = await todoAxiosService.patch({
-                    paramPath: editId,
-                    body: {
-                        title: newTitle,
-                    },
-                });
+        let res;
+        if (newTitle) {
+            res = await todoAxiosService.patch({
+                paramPath: editId,
+                body: {
+                    title: newTitle,
+                },
+            });
 
-                if (res.status === 200) {
-                    // OK
-                    dispatch(editEndTodo(editId, newTitle));
-                }
-            } else {
-                res = await todoAxiosService.delete({
-                    paramPath: editId,
-                });
-                if (res.status === 200) {
-                    // OK
-                    dispatch(removeTodo(editId));
-                }
+            if (res.status === 200) {
+                // OK
+                dispatch(editEndTodo(editId, newTitle));
             }
+        } else {
+            res = await todoAxiosService.delete({
+                paramPath: editId,
+            });
+            if (res.status === 200) {
+                // OK
+                dispatch(removeTodo(editId));
+            }
+        }
 
-            setOnCallingApi(false);
+        setOnCallingApi(false);
         // }, 200);
     };
 };
@@ -124,17 +124,17 @@ export const toggleTodoRequest = (setOnCallingApi, id, checked) => {
         setOnCallingApi(true);
         // fake delay
         // setTimeout(async () => {
-            const res = await todoAxiosService.patch({
-                paramPath: id,
-                body: {
-                    completed: checked,
-                },
-            });
-            if (res.status === 200) {
-                // OK
-                dispatch(toggleTodo(id, checked));
-            }
-            setOnCallingApi(false);
+        const res = await todoAxiosService.patch({
+            paramPath: id,
+            body: {
+                completed: checked,
+            },
+        });
+        if (res.status === 200) {
+            // OK
+            dispatch(toggleTodo(id, checked));
+        }
+        setOnCallingApi(false);
         // }, 200);
     };
 };
@@ -197,21 +197,21 @@ export const clearCompletedTodoRequest = (setOnCallingApi, ids) => {
         setOnCallingApi(true);
         // fake delay
         // setTimeout(async () => {
-            let successIds = [];
-            // all one by one patch request
-            for (const id of ids) {
-                const res = await todoAxiosService.delete({
-                    paramPath: id,
-                });
-                res.status === 200 && successIds.push(id);
-            }
+        let successIds = [];
+        // all one by one patch request
+        for (const id of ids) {
+            const res = await todoAxiosService.delete({
+                paramPath: id,
+            });
+            res.status === 200 && successIds.push(id);
+        }
 
-            if (successIds.length > 0) {
-                // OK
-                dispatch(clearCompletedTodo(successIds));
-            }
+        if (successIds.length > 0) {
+            // OK
+            dispatch(clearCompletedTodo(successIds));
+        }
 
-            setOnCallingApi(false);
+        setOnCallingApi(false);
         // }, 200);
     };
 };
@@ -221,5 +221,30 @@ export const clearCompletedTodo = (ids) => {
         payload: {
             ids,
         },
+    };
+};
+
+export const onNotificationSocket = ({ type, id }) => {
+    return async (dispatch) => {
+        if (type === todoActionNames.DELETE) {
+            dispatch(onNotification({ type, payload: id }));
+            return;
+        }
+
+        // all one by one patch request
+        const res = await todoAxiosService.get({
+            paramPath: id,
+        });
+        console.log(res);
+        res?.status === 200 && dispatch(onNotification({ type, payload: res.data }));
+        // }, 200);
+    };
+};
+
+export const onNotification = ({ type, payload }) => {
+    console.log(type, payload);
+    return {
+        type,
+        payload,
     };
 };

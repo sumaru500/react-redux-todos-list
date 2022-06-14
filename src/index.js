@@ -11,12 +11,18 @@ import GlobalStyles from './components/GlobalStyles';
 import App from '~/containers/App';
 import reduxLogger from './libs/reduxLogger';
 
-
 import '~/libs/utils';
+import { initWebSocket } from '~/websocket';
 
-const store = createStore(reduxLogger(rootReducer),
-    compose(applyMiddleware(thunk), window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__())
+// init websocket client
+
+const store = createStore(
+    reduxLogger(rootReducer),
+    compose(applyMiddleware(thunk), window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()),
 );
+
+initWebSocket(store);
+global.store = store;
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <React.StrictMode>

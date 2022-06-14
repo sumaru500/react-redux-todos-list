@@ -6,3 +6,6 @@ export const TOGGLE = 'toggle';
 export const TOGGLE_ALL = 'toggleAll';
 export const FILTER = 'filter';
 export const CLEAR_COMPLETED = 'clearCompleted';
+export const INSERT = 'insert';
+export const UPDATE = 'update';
+export const DELETE = 'delete';
